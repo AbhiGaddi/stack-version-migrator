@@ -30,48 +30,93 @@ const Home = () => {
     currentVersion: string,
     targetVersion: string,
   ) => {
-    // In a real application, this would fetch data from an API
-    // For now, we'll use mock data
-    setMigrationGuide({
-      technology,
-      currentVersion,
-      targetVersion,
-      breakingChanges: [
-        {
-          title: "Component Lifecycle Changes",
-          description:
-            "Several lifecycle methods are deprecated and will be removed in future versions.",
-        },
-        {
-          title: "Context API Updates",
-          description:
-            "The legacy context API has been replaced with a new version that provides better performance.",
-        },
-        {
-          title: "Strict Mode Behavior",
-          description:
-            "Strict mode now performs additional checks and warnings for deprecated patterns.",
-        },
-      ],
-      deprecatedFeatures: [
-        {
-          feature: "componentWillMount",
-          alternative: "Use componentDidMount or useEffect hook instead.",
-        },
-        {
-          feature: "componentWillReceiveProps",
-          alternative:
-            "Use getDerivedStateFromProps or useEffect hook instead.",
-        },
-        {
-          feature: "componentWillUpdate",
-          alternative: "Use getSnapshotBeforeUpdate or useEffect hook instead.",
-        },
-      ],
-      codeExamples: [
-        {
-          title: "Converting Class Components to Hooks",
-          before: `class Counter extends React.Component {
+    // Import the migration data from our data source
+    import("@/lib/migrationData")
+      .then(({ getMigrationData }) => {
+        const migrationData = getMigrationData(
+          technology,
+          currentVersion,
+          targetVersion,
+        );
+
+        if (migrationData) {
+          // Transform the data to match our expected format
+          setMigrationGuide({
+            technology,
+            currentVersion,
+            targetVersion,
+            breakingChanges: migrationData.breakingChanges.map((item) => ({
+              title: item.title,
+              description: item.description,
+            })),
+            deprecatedFeatures: migrationData.deprecatedFeatures.map(
+              (item) => ({
+                feature: item.feature,
+                alternative: item.alternative,
+              }),
+            ),
+            codeExamples: migrationData.codeExamples.map((item) => ({
+              title: item.title,
+              before: item.beforeCode,
+              after: item.afterCode,
+              language: item.language,
+            })),
+            configUpdates: migrationData.configUpdates.map((item) => ({
+              title: item.title,
+              description: item.description,
+              code: item.configChanges,
+            })),
+            documentationLinks: migrationData.documentationLinks.map(
+              (item) => ({
+                title: item.title,
+                url: item.url,
+                description: item.description,
+              }),
+            ),
+          });
+        } else {
+          // Fallback to mock data if no specific migration data is available
+          setMigrationGuide({
+            technology,
+            currentVersion,
+            targetVersion,
+            breakingChanges: [
+              {
+                title: "Component Lifecycle Changes",
+                description:
+                  "Several lifecycle methods are deprecated and will be removed in future versions.",
+              },
+              {
+                title: "Context API Updates",
+                description:
+                  "The legacy context API has been replaced with a new version that provides better performance.",
+              },
+              {
+                title: "Strict Mode Behavior",
+                description:
+                  "Strict mode now performs additional checks and warnings for deprecated patterns.",
+              },
+            ],
+            deprecatedFeatures: [
+              {
+                feature: "componentWillMount",
+                alternative: "Use componentDidMount or useEffect hook instead.",
+              },
+              {
+                feature: "componentWillReceiveProps",
+                alternative:
+                  "Use getDerivedStateFromProps or useEffect hook instead.",
+              },
+              {
+                feature: "componentWillUpdate",
+                alternative:
+                  "Use getSnapshotBeforeUpdate or useEffect hook instead.",
+              },
+            ],
+            codeExamples: [
+              {
+                title: "Converting Class Components to Hooks",
+                before: `class Counter extends React.Component {
   constructor(props) {
     super(props);
     this.state = { count: 0 };
@@ -91,7 +136,7 @@ const Home = () => {
     );
   }
 }`,
-          after: `function Counter() {
+                after: `function Counter() {
   const [count, setCount] = React.useState(0);
 
   const increment = () => {
@@ -105,11 +150,11 @@ const Home = () => {
     </div>
   );
 }`,
-          language: "jsx",
-        },
-        {
-          title: "Using the New Context API",
-          before: `// Legacy context API
+                language: "jsx",
+              },
+              {
+                title: "Using the New Context API",
+                before: `// Legacy context API
 class ThemeProvider extends React.Component {
   getChildContext() {
     return { theme: "dark" };
@@ -123,7 +168,7 @@ class ThemeProvider extends React.Component {
 ThemeProvider.childContextTypes = {
   theme: PropTypes.string
 };`,
-          after: `// New context API
+                after: `// New context API
 const ThemeContext = React.createContext("light");
 
 function ThemeProvider(props) {
@@ -133,51 +178,73 @@ function ThemeProvider(props) {
     </ThemeContext.Provider>
   );
 }`,
-          language: "jsx",
-        },
-      ],
-      configUpdates: [
-        {
-          title: "Update package.json dependencies",
-          description: "Update React and ReactDOM to the latest version",
-          code: `{
+                language: "jsx",
+              },
+            ],
+            configUpdates: [
+              {
+                title: "Update package.json dependencies",
+                description: "Update React and ReactDOM to the latest version",
+                code: `{
   "dependencies": {
     "react": "^18.0.0",
     "react-dom": "^18.0.0"
   }
 }`,
-        },
-        {
-          title: "Update Babel configuration",
-          description:
-            "Ensure your Babel configuration supports the latest JSX transform",
-          code: `{
+              },
+              {
+                title: "Update Babel configuration",
+                description:
+                  "Ensure your Babel configuration supports the latest JSX transform",
+                code: `{
   "presets": [
     ["@babel/preset-react", {
       "runtime": "automatic"
     }]
   ]
 }`,
-        },
-      ],
-      documentationLinks: [
-        {
-          title: "React 18 Release Notes",
-          url: "https://reactjs.org/blog/2022/03/29/react-v18.html",
-          description: "Official release notes for React 18",
-        },
-        {
-          title: "Upgrading to React 18",
-          url: "https://reactjs.org/blog/2022/03/08/react-18-upgrade-guide.html",
-          description: "Step-by-step guide for upgrading to React 18",
-        },
-        {
-          title: "New Features in React 18",
-          url: "https://reactjs.org/docs/concurrent-mode-intro.html",
-          description: "Learn about concurrent features in React 18",
-        },
-      ],
-    });
+              },
+            ],
+            documentationLinks: [
+              {
+                title: "React 18 Release Notes",
+                url: "https://reactjs.org/blog/2022/03/29/react-v18.html",
+                description: "Official release notes for React 18",
+              },
+              {
+                title: "Upgrading to React 18",
+                url: "https://reactjs.org/blog/2022/03/08/react-18-upgrade-guide.html",
+                description: "Step-by-step guide for upgrading to React 18",
+              },
+              {
+                title: "New Features in React 18",
+                url: "https://reactjs.org/docs/concurrent-mode-intro.html",
+                description: "Learn about concurrent features in React 18",
+              },
+            ],
+          });
+        }
+      })
+      .catch((error) => {
+        console.error("Error loading migration data:", error);
+        // Fallback to mock data on error
+        setMigrationGuide({
+          technology,
+          currentVersion,
+          targetVersion,
+          breakingChanges: [
+            {
+              title: "Error Loading Data",
+              description:
+                "There was an error loading migration data. Please try again later.",
+            },
+          ],
+          deprecatedFeatures: [],
+          codeExamples: [],
+          configUpdates: [],
+          documentationLinks: [],
+        });
+      });
   };
 
   return (
