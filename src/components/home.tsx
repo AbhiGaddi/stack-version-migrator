@@ -25,209 +25,162 @@ const Home = () => {
     }>;
   } | null>(null);
 
+  const versionOptions: Record<string, string[]> = {
+    react: ["17", "18", "latest"],
+    typescript: ["4", "5", "latest"],
+    angular: ["15", "16", "latest"],
+    vue: ["2", "3", "latest"],
+    node: ["16", "18", "latest"],
+    springboot: ["2.7", "3.0", "latest"],
+    elasticsearch: ["7.17", "8.0", "latest"],
+    keycloak: ["15.0", "16.0", "latest"],
+    druid: ["0.22", "24.0", "latest"],
+    redis: ["6.2", "7.0", "latest"],
+    kafka: ["2.8", "3.0", "latest"]
+  };
+
   const handleGenerateGuide = (
     technology: string,
     currentVersion: string,
-    targetVersion: string,
+    targetVersion: string
   ) => {
     // Import the migration data from our data source
     import("@/lib/migrationData")
       .then(({ getMigrationData }) => {
-        const migrationData = getMigrationData(
-          technology,
-          currentVersion,
-          targetVersion,
-        );
-
-        if (migrationData) {
-          // Transform the data to match our expected format
-          setMigrationGuide({
+        const techKey = technology.toLowerCase();
+        
+        // If target version is 'latest', get all available versions
+        if (targetVersion === "latest") {
+          const versions = versionOptions[techKey].filter(v => v !== "latest");
+          const latestVersion = versions[versions.length - 1];
+          
+          const migrationData = getMigrationData(
             technology,
             currentVersion,
-            targetVersion,
-            breakingChanges: migrationData.breakingChanges.map((item) => ({
-              title: item.title,
-              description: item.description,
-            })),
-            deprecatedFeatures: migrationData.deprecatedFeatures.map(
-              (item) => ({
-                feature: item.feature,
-                alternative: item.alternative,
-              }),
-            ),
-            codeExamples: migrationData.codeExamples.map((item) => ({
-              title: item.title,
-              before: item.beforeCode,
-              after: item.afterCode,
-              language: item.language,
-            })),
-            configUpdates: migrationData.configUpdates.map((item) => ({
-              title: item.title,
-              description: item.description,
-              code: item.configChanges,
-            })),
-            documentationLinks: migrationData.documentationLinks.map(
-              (item) => ({
+            latestVersion
+          );
+
+          if (migrationData) {
+            setMigrationGuide({
+              technology,
+              currentVersion,
+              targetVersion: latestVersion,
+              breakingChanges: migrationData.breakingChanges.map((item) => ({
                 title: item.title,
-                url: item.url,
                 description: item.description,
-              }),
-            ),
-          });
+              })),
+              deprecatedFeatures: migrationData.deprecatedFeatures.map(
+                (item) => ({
+                  feature: item.feature,
+                  alternative: item.alternative,
+                }),
+              ),
+              codeExamples: migrationData.codeExamples.map((item) => ({
+                title: item.title,
+                before: item.before,
+                after: item.after,
+                language: item.language,
+              })),
+              configUpdates: migrationData.configUpdates.map((item) => ({
+                title: item.title,
+                description: item.description,
+                code: item.code,
+              })),
+              documentationLinks: migrationData.documentationLinks.map(
+                (item) => ({
+                  title: item.title,
+                  url: item.url,
+                  description: item.description,
+                }),
+              ),
+            });
+          } else {
+            setMigrationGuide({
+              technology,
+              currentVersion,
+              targetVersion: latestVersion,
+              breakingChanges: [
+                {
+                  title: "No Migration Data Available",
+                  description: `Migration guide from ${currentVersion} to ${latestVersion} is not available yet. Please check back later or consult the official documentation.`,
+                },
+              ],
+              deprecatedFeatures: [],
+              codeExamples: [],
+              configUpdates: [],
+              documentationLinks: [],
+            });
+          }
         } else {
-          // Fallback to mock data if no specific migration data is available
-          setMigrationGuide({
+          // Handle normal version selection
+          const mappedCurrentVersion = versionOptions[techKey]?.includes(currentVersion) 
+            ? currentVersion 
+            : versionOptions[techKey]?.[0] || currentVersion;
+          const mappedTargetVersion = versionOptions[techKey]?.includes(targetVersion) 
+            ? targetVersion 
+            : versionOptions[techKey]?.[0] || targetVersion;
+
+          const migrationData = getMigrationData(
             technology,
-            currentVersion,
-            targetVersion,
-            breakingChanges: [
-              {
-                title: "Component Lifecycle Changes",
-                description:
-                  "Several lifecycle methods are deprecated and will be removed in future versions.",
-              },
-              {
-                title: "Context API Updates",
-                description:
-                  "The legacy context API has been replaced with a new version that provides better performance.",
-              },
-              {
-                title: "Strict Mode Behavior",
-                description:
-                  "Strict mode now performs additional checks and warnings for deprecated patterns.",
-              },
-            ],
-            deprecatedFeatures: [
-              {
-                feature: "componentWillMount",
-                alternative: "Use componentDidMount or useEffect hook instead.",
-              },
-              {
-                feature: "componentWillReceiveProps",
-                alternative:
-                  "Use getDerivedStateFromProps or useEffect hook instead.",
-              },
-              {
-                feature: "componentWillUpdate",
-                alternative:
-                  "Use getSnapshotBeforeUpdate or useEffect hook instead.",
-              },
-            ],
-            codeExamples: [
-              {
-                title: "Converting Class Components to Hooks",
-                before: `class Counter extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { count: 0 };
-    this.increment = this.increment.bind(this);
-  }
+            mappedCurrentVersion,
+            mappedTargetVersion
+          );
 
-  increment() {
-    this.setState({ count: this.state.count + 1 });
-  }
-
-  render() {
-    return (
-      <div>
-        <p>Count: {this.state.count}</p>
-        <button onClick={this.increment}>Increment</button>
-      </div>
-    );
-  }
-}`,
-                after: `function Counter() {
-  const [count, setCount] = React.useState(0);
-
-  const increment = () => {
-    setCount(count + 1);
-  };
-
-  return (
-    <div>
-      <p>Count: {count}</p>
-      <button onClick={increment}>Increment</button>
-    </div>
-  );
-}`,
-                language: "jsx",
-              },
-              {
-                title: "Using the New Context API",
-                before: `// Legacy context API
-class ThemeProvider extends React.Component {
-  getChildContext() {
-    return { theme: "dark" };
-  }
-
-  render() {
-    return this.props.children;
-  }
-}
-
-ThemeProvider.childContextTypes = {
-  theme: PropTypes.string
-};`,
-                after: `// New context API
-const ThemeContext = React.createContext("light");
-
-function ThemeProvider(props) {
-  return (
-    <ThemeContext.Provider value="dark">
-      {props.children}
-    </ThemeContext.Provider>
-  );
-}`,
-                language: "jsx",
-              },
-            ],
-            configUpdates: [
-              {
-                title: "Update package.json dependencies",
-                description: "Update React and ReactDOM to the latest version",
-                code: `{
-  "dependencies": {
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
-  }
-}`,
-              },
-              {
-                title: "Update Babel configuration",
-                description:
-                  "Ensure your Babel configuration supports the latest JSX transform",
-                code: `{
-  "presets": [
-    ["@babel/preset-react", {
-      "runtime": "automatic"
-    }]
-  ]
-}`,
-              },
-            ],
-            documentationLinks: [
-              {
-                title: "React 18 Release Notes",
-                url: "https://reactjs.org/blog/2022/03/29/react-v18.html",
-                description: "Official release notes for React 18",
-              },
-              {
-                title: "Upgrading to React 18",
-                url: "https://reactjs.org/blog/2022/03/08/react-18-upgrade-guide.html",
-                description: "Step-by-step guide for upgrading to React 18",
-              },
-              {
-                title: "New Features in React 18",
-                url: "https://reactjs.org/docs/concurrent-mode-intro.html",
-                description: "Learn about concurrent features in React 18",
-              },
-            ],
-          });
+          if (migrationData) {
+            setMigrationGuide({
+              technology,
+              currentVersion: mappedCurrentVersion,
+              targetVersion: mappedTargetVersion,
+              breakingChanges: migrationData.breakingChanges.map((item) => ({
+                title: item.title,
+                description: item.description,
+              })),
+              deprecatedFeatures: migrationData.deprecatedFeatures.map(
+                (item) => ({
+                  feature: item.feature,
+                  alternative: item.alternative,
+                }),
+              ),
+              codeExamples: migrationData.codeExamples.map((item) => ({
+                title: item.title,
+                before: item.before,
+                after: item.after,
+                language: item.language,
+              })),
+              configUpdates: migrationData.configUpdates.map((item) => ({
+                title: item.title,
+                description: item.description,
+                code: item.code,
+              })),
+              documentationLinks: migrationData.documentationLinks.map(
+                (item) => ({
+                  title: item.title,
+                  url: item.url,
+                  description: item.description,
+                }),
+              ),
+            });
+          } else {
+            setMigrationGuide({
+              technology,
+              currentVersion: mappedCurrentVersion,
+              targetVersion: mappedTargetVersion,
+              breakingChanges: [
+                {
+                  title: "No Migration Data Available",
+                  description: `Migration guide from ${mappedCurrentVersion} to ${mappedTargetVersion} is not available yet. Please check back later or consult the official documentation.`,
+                },
+              ],
+              deprecatedFeatures: [],
+              codeExamples: [],
+              configUpdates: [],
+              documentationLinks: [],
+            });
+          }
         }
       })
       .catch((error) => {
         console.error("Error loading migration data:", error);
-        // Fallback to mock data on error
         setMigrationGuide({
           technology,
           currentVersion,
@@ -248,52 +201,79 @@ function ThemeProvider(props) {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="bg-primary text-primary-foreground py-6 px-4 md:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="container mx-auto"
-        >
-          <h1 className="text-2xl md:text-3xl font-bold">StackMigrator</h1>
-          <p className="text-sm md:text-base opacity-90">
-            Technology Migration Assistant
-          </p>
-        </motion.div>
-      </header>
-
-      <main className="container mx-auto px-4 py-8 md:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <StackSelectionPanel onGenerateGuide={handleGenerateGuide} />
-        </motion.div>
-
-        {migrationGuide && (
-          <>
-            <Separator className="my-8" />
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              <MigrationGuideDisplay guide={migrationGuide} />
-            </motion.div>
-          </>
-        )}
-      </main>
-
-      <footer className="bg-muted py-6 px-4 md:px-8 mt-auto">
-        <div className="container mx-auto text-center text-sm text-muted-foreground">
-          <p>
-            StackMigrator &copy; {new Date().getFullYear()} - Technology
-            Migration Assistant
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Technology Migration Guide
+          </h1>
+          <p className="text-xl text-gray-600">
+            Select your technology stack and versions to generate a detailed migration guide
           </p>
         </div>
-      </footer>
+
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+          <StackSelectionPanel onGenerateGuide={handleGenerateGuide} />
+        </div>
+
+        {migrationGuide && (
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="mb-6">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+                Migration Guide: {migrationGuide.technology} {migrationGuide.currentVersion} → {migrationGuide.targetVersion}
+              </h2>
+              <div className="flex items-center space-x-4 text-sm text-gray-500">
+                <span className="flex items-center">
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Last updated: {new Date().toLocaleDateString()}
+                </span>
+              </div>
+            </div>
+
+            <MigrationGuideDisplay
+              technology={migrationGuide.technology}
+              currentVersion={migrationGuide.currentVersion}
+              targetVersion={migrationGuide.targetVersion}
+              guideData={{
+                breakingChanges: migrationGuide.breakingChanges.map((item) => ({
+                  id: crypto.randomUUID(),
+                  title: item.title,
+                  description: item.description,
+                  severity: "high",
+                })),
+                deprecatedFeatures: migrationGuide.deprecatedFeatures.map((item) => ({
+                  id: crypto.randomUUID(),
+                  feature: item.feature,
+                  description: "",
+                  alternative: item.alternative,
+                })),
+                codeExamples: migrationGuide.codeExamples.map((item) => ({
+                  id: crypto.randomUUID(),
+                  title: item.title,
+                  description: "",
+                  beforeCode: item.before,
+                  afterCode: item.after,
+                  language: item.language,
+                })),
+                configUpdates: migrationGuide.configUpdates.map((item) => ({
+                  id: crypto.randomUUID(),
+                  title: item.title,
+                  description: item.description,
+                  configChanges: item.code || "",
+                })),
+                documentationLinks: migrationGuide.documentationLinks.map((item) => ({
+                  id: crypto.randomUUID(),
+                  title: item.title,
+                  url: item.url,
+                  description: item.description,
+                })),
+              }}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 };

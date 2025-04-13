@@ -1,0 +1,66 @@
+{
+  "technology": "Spring Boot",
+  "migrations": [
+    {
+      "fromVersion": "2.7",
+      "toVersion": "3.0",
+      "breakingChanges": [
+        {
+          "title": "Java 17+ Required",
+          "description": "Spring Boot 3.0 requires Java 17 or later. This is a significant change from Spring Boot 2.7 which supported Java 8+."
+        },
+        {
+          "title": "Jakarta EE 9+",
+          "description": "All javax.* imports have been replaced with jakarta.* imports. This affects many parts of the application including JPA, Servlet, and other EE specifications."
+        },
+        {
+          "title": "Hibernate 6.0",
+          "description": "Major upgrade to Hibernate 6.0 with breaking changes in entity mapping and query handling."
+        }
+      ],
+      "deprecatedFeatures": [
+        {
+          "feature": "Spring MVC Auto-configuration",
+          "alternative": "Use the new auto-configuration classes in the updated package structure"
+        },
+        {
+          "feature": "Spring Security OAuth2",
+          "alternative": "Use Spring Security OAuth2 Resource Server or Spring Authorization Server"
+        }
+      ],
+      "codeExamples": [
+        {
+          "title": "Jakarta EE Migration",
+          "before": "import javax.persistence.Entity;\nimport javax.validation.constraints.NotNull;\n\n@Entity\npublic class User {\n  @NotNull\n  private String name;\n}",
+          "after": "import jakarta.persistence.Entity;\nimport jakarta.validation.constraints.NotNull;\n\n@Entity\npublic class User {\n  @NotNull\n  private String name;\n}",
+          "language": "java"
+        },
+        {
+          "title": "Spring Security Configuration",
+          "before": "@Configuration\n@EnableWebSecurity\npublic class SecurityConfig extends WebSecurityConfigurerAdapter {\n  @Override\n  protected void configure(HttpSecurity http) throws Exception {\n    http.authorizeRequests()\n        .antMatchers(\"/public/**\").permitAll()\n        .anyRequest().authenticated();\n  }\n}",
+          "after": "@Configuration\npublic class SecurityConfig {\n  @Bean\n  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {\n    http.authorizeHttpRequests()\n        .requestMatchers(\"/public/**\").permitAll()\n        .anyRequest().authenticated();\n    return http.build();\n  }\n}",
+          "language": "java"
+        }
+      ],
+      "configUpdates": [
+        {
+          "title": "pom.xml Updates",
+          "description": "Update Spring Boot dependencies to version 3.0",
+          "code": "<parent>\n  <groupId>org.springframework.boot</groupId>\n  <artifactId>spring-boot-starter-parent</artifactId>\n  <version>3.0.0</version>\n</parent>\n\n<properties>\n  <java.version>17</java.version>\n</properties>"
+        }
+      ],
+      "documentationLinks": [
+        {
+          "title": "Spring Boot 3.0 Migration Guide",
+          "url": "https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-3.0-Migration-Guide",
+          "description": "Official Spring Boot 3.0 migration guide"
+        },
+        {
+          "title": "Jakarta EE Migration Guide",
+          "url": "https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-3.0-Migration-Guide#jakarta-ee-9",
+          "description": "Learn about migrating from javax to jakarta"
+        }
+      ]
+    }
+  ]
+} 

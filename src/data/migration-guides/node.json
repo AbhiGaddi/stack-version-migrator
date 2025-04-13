@@ -1,0 +1,66 @@
+{
+  "technology": "Node.js",
+  "migrations": [
+    {
+      "fromVersion": "16",
+      "toVersion": "18",
+      "breakingChanges": [
+        {
+          "title": "Test Runner Module",
+          "description": "Node.js 18 introduces a built-in test runner module, which may conflict with existing test frameworks."
+        },
+        {
+          "title": "Web Streams API",
+          "description": "The Web Streams API is now stable and available globally, which may affect code using similar stream implementations."
+        },
+        {
+          "title": "Fetch API",
+          "description": "The Fetch API is now stable and available globally, which may conflict with existing fetch implementations."
+        }
+      ],
+      "deprecatedFeatures": [
+        {
+          "feature": "require('crypto').createCipher",
+          "alternative": "Use require('crypto').createCipheriv"
+        },
+        {
+          "feature": "require('crypto').createDecipher",
+          "alternative": "Use require('crypto').createDecipheriv"
+        }
+      ],
+      "codeExamples": [
+        {
+          "title": "Using the Test Runner",
+          "before": "const { describe, it } = require('mocha');\n\ndescribe('My Test', () => {\n  it('should work', () => {\n    // test code\n  });\n});",
+          "after": "import { test } from 'node:test';\nimport assert from 'node:assert';\n\ntest('My Test', (t) => {\n  // test code\n});",
+          "language": "javascript"
+        },
+        {
+          "title": "Using Fetch API",
+          "before": "const axios = require('axios');\n\naxios.get('https://api.example.com/data')\n  .then(response => console.log(response.data));",
+          "after": "fetch('https://api.example.com/data')\n  .then(response => response.json())\n  .then(data => console.log(data));",
+          "language": "javascript"
+        }
+      ],
+      "configUpdates": [
+        {
+          "title": "package.json Updates",
+          "description": "Update Node.js configuration for version 18",
+          "code": "{\n  \"engines\": {\n    \"node\": \">=18.0.0\"\n  },\n  \"type\": \"module\"\n}"
+        }
+      ],
+      "documentationLinks": [
+        {
+          "title": "Node.js 18 Release Notes",
+          "url": "https://nodejs.org/en/blog/release/v18.0.0/",
+          "description": "Official Node.js 18 release notes"
+        },
+        {
+          "title": "Test Runner Documentation",
+          "url": "https://nodejs.org/api/test.html",
+          "description": "Learn about the new test runner in Node.js 18"
+        }
+      ]
+    }
+  ]
+} 

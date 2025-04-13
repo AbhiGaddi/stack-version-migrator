@@ -1,0 +1,66 @@
+{
+  "technology": "Elasticsearch",
+  "migrations": [
+    {
+      "fromVersion": "7.17",
+      "toVersion": "8.0",
+      "breakingChanges": [
+        {
+          "title": "Java 17+ Required",
+          "description": "Elasticsearch 8.0 requires Java 17 or later. This is a significant change from Elasticsearch 7.x which supported Java 8+."
+        },
+        {
+          "title": "Security Changes",
+          "description": "Security is now enabled by default. The security auto-configuration process has been updated, and TLS is required for node-to-node communication."
+        },
+        {
+          "title": "Type-based APIs Removed",
+          "description": "All type-based document APIs have been removed. The _type field is no longer supported in document APIs."
+        }
+      ],
+      "deprecatedFeatures": [
+        {
+          "feature": "Type-based Document APIs",
+          "alternative": "Use the new document APIs without types"
+        },
+        {
+          "feature": "Deprecated Query Parameters",
+          "alternative": "Use the new query parameters and syntax"
+        }
+      ],
+      "codeExamples": [
+        {
+          "title": "Document API Update",
+          "before": "PUT /my-index/_doc/1\n{\n  \"title\": \"My Document\"\n}",
+          "after": "PUT /my-index/_create/1\n{\n  \"title\": \"My Document\"\n}",
+          "language": "json"
+        },
+        {
+          "title": "Security Configuration",
+          "before": "xpack.security.enabled: false",
+          "after": "xpack.security.enabled: true\nxpack.security.transport.ssl.enabled: true",
+          "language": "yaml"
+        }
+      ],
+      "configUpdates": [
+        {
+          "title": "elasticsearch.yml Updates",
+          "description": "Update Elasticsearch configuration for version 8.0",
+          "code": "cluster.name: my-cluster\nnode.name: node-1\nnetwork.host: 0.0.0.0\nxpack.security.enabled: true\nxpack.security.transport.ssl.enabled: true"
+        }
+      ],
+      "documentationLinks": [
+        {
+          "title": "Elasticsearch 8.0 Release Notes",
+          "url": "https://www.elastic.co/guide/en/elasticsearch/reference/8.0/release-notes-8.0.0.html",
+          "description": "Official Elasticsearch 8.0 release notes"
+        },
+        {
+          "title": "Breaking Changes",
+          "url": "https://www.elastic.co/guide/en/elasticsearch/reference/8.0/breaking-changes.html",
+          "description": "Detailed list of breaking changes in Elasticsearch 8.0"
+        }
+      ]
+    }
+  ]
+} 

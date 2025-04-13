@@ -1,0 +1,66 @@
+{
+  "technology": "Keycloak",
+  "migrations": [
+    {
+      "fromVersion": "15.0",
+      "toVersion": "16.0",
+      "breakingChanges": [
+        {
+          "title": "Java 11+ Required",
+          "description": "Keycloak 16.0 requires Java 11 or later. This is a significant change from Keycloak 15.0 which supported Java 8+."
+        },
+        {
+          "title": "Theme System Changes",
+          "description": "The theme system has been completely revamped with a new structure and configuration options."
+        },
+        {
+          "title": "Storage Provider Changes",
+          "description": "Changes in the storage provider API and configuration may affect existing custom storage providers."
+        }
+      ],
+      "deprecatedFeatures": [
+        {
+          "feature": "Legacy Theme System",
+          "alternative": "Use the new theme system with improved customization options"
+        },
+        {
+          "feature": "Legacy Storage Providers",
+          "alternative": "Update to the new storage provider API"
+        }
+      ],
+      "codeExamples": [
+        {
+          "title": "Theme Configuration",
+          "before": "keycloak.theme.dir=/themes\nkeycloak.theme.default=keycloak",
+          "after": "kc.theme.dir=/themes\nkc.theme.default=keycloak",
+          "language": "properties"
+        },
+        {
+          "title": "Storage Provider Configuration",
+          "before": "spi-storage-provider=legacy\nspi-storage-provider-legacy-enabled=true",
+          "after": "spi-storage-provider=new\nspi-storage-provider-new-enabled=true",
+          "language": "properties"
+        }
+      ],
+      "configUpdates": [
+        {
+          "title": "standalone.xml Updates",
+          "description": "Update Keycloak configuration for version 16.0",
+          "code": "<subsystem xmlns=\"urn:jboss:domain:keycloak-server:1.1\">\n  <web-context>auth</web-context>\n  <providers>\n    <provider>classpath:${jboss.home.dir}/providers/*</provider>\n  </providers>\n</subsystem>"
+        }
+      ],
+      "documentationLinks": [
+        {
+          "title": "Keycloak 16.0 Release Notes",
+          "url": "https://www.keycloak.org/docs/latest/release_notes/index.html",
+          "description": "Official Keycloak 16.0 release notes"
+        },
+        {
+          "title": "Theme Development Guide",
+          "url": "https://www.keycloak.org/docs/latest/server_development/index.html#_themes",
+          "description": "Learn about the new theme system in Keycloak 16.0"
+        }
+      ]
+    }
+  ]
+} 

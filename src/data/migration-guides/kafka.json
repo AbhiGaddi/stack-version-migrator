@@ -1,0 +1,76 @@
+{
+  "technology": "Kafka",
+  "currentVersion": "2.8",
+  "targetVersion": "3.0",
+  "breakingChanges": [
+    {
+      "title": "ZooKeeper Removal",
+      "description": "Kafka 3.0 removes ZooKeeper dependency, requiring migration to KRaft mode for metadata management."
+    },
+    {
+      "title": "Producer API Changes",
+      "description": "The producer API has been updated with new configuration options and deprecated methods."
+    },
+    {
+      "title": "Consumer Group Protocol Changes",
+      "description": "New consumer group protocol implementation with improved rebalancing."
+    }
+  ],
+  "deprecatedFeatures": [
+    {
+      "feature": "ZooKeeper-based controller",
+      "alternative": "Use KRaft mode for metadata management"
+    },
+    {
+      "feature": "Legacy message format",
+      "alternative": "Use the new message format v2"
+    },
+    {
+      "feature": "Old consumer API",
+      "alternative": "Use the new consumer API with improved group management"
+    }
+  ],
+  "codeExamples": [
+    {
+      "title": "Producer Configuration Update",
+      "before": "properties.put(\"bootstrap.servers\", \"localhost:9092\");\nproperties.put(\"key.serializer\", \"org.apache.kafka.common.serialization.StringSerializer\");\nproperties.put(\"value.serializer\", \"org.apache.kafka.common.serialization.StringSerializer\");",
+      "after": "properties.put(\"bootstrap.servers\", \"localhost:9092\");\nproperties.put(\"key.serializer\", \"org.apache.kafka.common.serialization.StringSerializer\");\nproperties.put(\"value.serializer\", \"org.apache.kafka.common.serialization.StringSerializer\");\nproperties.put(\"enable.idempotence\", \"true\");\nproperties.put(\"transactional.id\", \"my-transactional-id\");",
+      "language": "java"
+    },
+    {
+      "title": "Consumer Configuration Update",
+      "before": "properties.put(\"bootstrap.servers\", \"localhost:9092\");\nproperties.put(\"group.id\", \"my-group\");\nproperties.put(\"key.deserializer\", \"org.apache.kafka.common.serialization.StringDeserializer\");\nproperties.put(\"value.deserializer\", \"org.apache.kafka.common.serialization.StringDeserializer\");",
+      "after": "properties.put(\"bootstrap.servers\", \"localhost:9092\");\nproperties.put(\"group.id\", \"my-group\");\nproperties.put(\"key.deserializer\", \"org.apache.kafka.common.serialization.StringDeserializer\");\nproperties.put(\"value.deserializer\", \"org.apache.kafka.common.serialization.StringDeserializer\");\nproperties.put(\"isolation.level\", \"read_committed\");\nproperties.put(\"group.instance.id\", \"consumer-1\");",
+      "language": "java"
+    }
+  ],
+  "configUpdates": [
+    {
+      "title": "KRaft Mode Configuration",
+      "description": "Configuration for running Kafka in KRaft mode without ZooKeeper",
+      "code": "process.roles=broker,controller\nnode.id=1\ncontroller.quorum.voters=1@localhost:9093\nlisteners=PLAINTEXT://:9092,CONTROLLER://:9093\ninter.broker.listener.name=PLAINTEXT\ncontroller.listener.names=CONTROLLER\nlistener.security.protocol.map=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+    },
+    {
+      "title": "New Security Settings",
+      "description": "Updated security configuration for Kafka 3.0",
+      "code": "security.protocol=SSL\nssl.keystore.location=/path/to/keystore.jks\nssl.keystore.password=keystore-password\nssl.key.password=key-password\nssl.truststore.location=/path/to/truststore.jks\nssl.truststore.password=truststore-password"
+    }
+  ],
+  "documentationLinks": [
+    {
+      "title": "Kafka 3.0 Release Notes",
+      "url": "https://kafka.apache.org/30/documentation.html#upgrade",
+      "description": "Official Kafka 3.0 release notes and upgrade guide"
+    },
+    {
+      "title": "KRaft Mode Documentation",
+      "url": "https://kafka.apache.org/documentation/#kraft",
+      "description": "Documentation for running Kafka without ZooKeeper using KRaft"
+    },
+    {
+      "title": "Migration Guide",
+      "url": "https://kafka.apache.org/30/migration-guide.html",
+      "description": "Detailed migration guide from Kafka 2.8 to 3.0"
+    }
+  ]
+} 

@@ -1,0 +1,66 @@
+{
+  "technology": "Druid",
+  "migrations": [
+    {
+      "fromVersion": "0.22",
+      "toVersion": "24.0",
+      "breakingChanges": [
+        {
+          "title": "Java 17+ Required",
+          "description": "Druid 24.0 requires Java 17 or later. This is a significant change from Druid 0.22 which supported Java 8+."
+        },
+        {
+          "title": "Query API Changes",
+          "description": "The query API has been updated with breaking changes for better performance and security."
+        },
+        {
+          "title": "Configuration Changes",
+          "description": "Several configuration properties have been renamed or removed in favor of new alternatives."
+        }
+      ],
+      "deprecatedFeatures": [
+        {
+          "feature": "Legacy Query API",
+          "alternative": "Use the new query API with improved performance"
+        },
+        {
+          "feature": "Old Configuration Properties",
+          "alternative": "Use the new configuration properties"
+        }
+      ],
+      "codeExamples": [
+        {
+          "title": "Query API Update",
+          "before": "{\n  \"queryType\": \"timeseries\",\n  \"dataSource\": \"sample_datasource\"\n}",
+          "after": "{\n  \"queryType\": \"timeseries\",\n  \"dataSource\": \"sample_datasource\",\n  \"context\": {\n    \"timeout\": 60000\n  }\n}",
+          "language": "json"
+        },
+        {
+          "title": "Configuration Update",
+          "before": "druid.zk.service.host=localhost\ndruid.zk.paths.base=/druid",
+          "after": "druid.zk.service.host=localhost\ndruid.zk.paths.base=/druid\ndruid.server.http.numThreads=10",
+          "language": "properties"
+        }
+      ],
+      "configUpdates": [
+        {
+          "title": "common.runtime.properties Updates",
+          "description": "Update Druid configuration for version 24.0",
+          "code": "druid.zk.service.host=localhost\ndruid.zk.paths.base=/druid\ndruid.server.http.numThreads=10\ndruid.processing.numThreads=2"
+        }
+      ],
+      "documentationLinks": [
+        {
+          "title": "Druid 24.0 Release Notes",
+          "url": "https://druid.apache.org/docs/latest/development/extensions-core/kafka-ingestion.html",
+          "description": "Official Druid 24.0 documentation"
+        },
+        {
+          "title": "Query API Documentation",
+          "url": "https://druid.apache.org/docs/latest/querying/querying.html",
+          "description": "Learn about the new query API in Druid 24.0"
+        }
+      ]
+    }
+  ]
+} 

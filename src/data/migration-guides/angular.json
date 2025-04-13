@@ -1,0 +1,66 @@
+{
+  "technology": "Angular",
+  "migrations": [
+    {
+      "fromVersion": "15",
+      "toVersion": "16",
+      "breakingChanges": [
+        {
+          "title": "Standalone Components by Default",
+          "description": "Angular 16 makes standalone components the default. NgModules are now optional, and new components are created as standalone by default."
+        },
+        {
+          "title": "Required Input Properties",
+          "description": "Input properties can now be marked as required using the @Input decorator with the required property."
+        },
+        {
+          "title": "Router Guards Changes",
+          "description": "Router guards now support functional guards instead of class-based guards."
+        }
+      ],
+      "deprecatedFeatures": [
+        {
+          "feature": "Class-based Guards",
+          "alternative": "Use functional guards"
+        },
+        {
+          "feature": "NgModules for new components",
+          "alternative": "Use standalone components"
+        }
+      ],
+      "codeExamples": [
+        {
+          "title": "Standalone Component",
+          "before": "@Component({\n  selector: 'app-example',\n  templateUrl: './example.component.html',\n  styleUrls: ['./example.component.css']\n})\nexport class ExampleComponent {}",
+          "after": "@Component({\n  selector: 'app-example',\n  standalone: true,\n  imports: [CommonModule],\n  templateUrl: './example.component.html',\n  styleUrls: ['./example.component.css']\n})\nexport class ExampleComponent {}",
+          "language": "typescript"
+        },
+        {
+          "title": "Required Input",
+          "before": "@Input() name: string;",
+          "after": "@Input({ required: true }) name: string;",
+          "language": "typescript"
+        }
+      ],
+      "configUpdates": [
+        {
+          "title": "angular.json Updates",
+          "description": "Update Angular configuration for version 16",
+          "code": "{\n  \"projects\": {\n    \"your-project\": {\n      \"architect\": {\n        \"build\": {\n          \"options\": {\n            \"aot\": true,\n            \"buildOptimizer\": true\n          }\n        }\n      }\n    }\n  }\n}"
+        }
+      ],
+      "documentationLinks": [
+        {
+          "title": "Angular 16 Upgrade Guide",
+          "url": "https://angular.io/guide/update-to-version-16",
+          "description": "Official Angular 16 upgrade guide"
+        },
+        {
+          "title": "Standalone Components",
+          "url": "https://angular.io/guide/standalone-components",
+          "description": "Learn about standalone components in Angular 16"
+        }
+      ]
+    }
+  ]
+} 

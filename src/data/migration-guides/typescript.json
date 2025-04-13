@@ -1,0 +1,60 @@
+{
+  "technology": "TypeScript",
+  "migrations": [
+    {
+      "fromVersion": "4",
+      "toVersion": "5",
+      "breakingChanges": [
+        {
+          "title": "Decorators Changes",
+          "description": "TypeScript 5.0 implements the ECMAScript decorator proposal, which changes how decorators work and are typed."
+        },
+        {
+          "title": "Enum Changes",
+          "description": "Enums without initializers in const enums now have values that match their previous type-only behavior."
+        },
+        {
+          "title": "lib.d.ts Changes",
+          "description": "TypeScript 5.0 includes updated DOM definitions that might affect existing code."
+        }
+      ],
+      "deprecatedFeatures": [
+        {
+          "feature": "--target ES3",
+          "alternative": "Use --target ES5 or later"
+        },
+        {
+          "feature": "Legacy Decorators",
+          "alternative": "Use the new ECMAScript decorator syntax"
+        }
+      ],
+      "codeExamples": [
+        {
+          "title": "New Decorator Syntax",
+          "before": "function decorator(target: any, key: string) {\n  // implementation\n}\n\nclass Example {\n  @decorator\n  method() {}\n}",
+          "after": "function decorator() {\n  return function(target: any, context: ClassMethodDecoratorContext) {\n    // implementation\n  };\n}\n\nclass Example {\n  @decorator()\n  method() {}\n}",
+          "language": "typescript"
+        }
+      ],
+      "configUpdates": [
+        {
+          "title": "tsconfig.json Updates",
+          "description": "Update TypeScript configuration for version 5.0",
+          "code": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2020\",\n    \"module\": \"NodeNext\",\n    \"moduleResolution\": \"NodeNext\",\n    \"experimentalDecorators\": true,\n    \"emitDecoratorMetadata\": true\n  }\n}"
+        }
+      ],
+      "documentationLinks": [
+        {
+          "title": "TypeScript 5.0 Release Notes",
+          "url": "https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/",
+          "description": "Official TypeScript 5.0 release announcement with migration information"
+        },
+        {
+          "title": "Decorators Documentation",
+          "url": "https://www.typescriptlang.org/docs/handbook/decorators.html",
+          "description": "Learn about the new decorator syntax in TypeScript 5.0"
+        }
+      ]
+    }
+  ]
+} 
