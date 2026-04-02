@@ -15,7 +15,7 @@ Dependency version migration is painful. Developers know they need to upgrade (S
 4. Hunt down deprecated API calls across the codebase
 5. Hope tests pass
 
-No tool guides them interactively, applies the code changes, and validates with their actual test suite. Renovate/Dependabot only bump version numbers. GPT-Migrate is for language migration, not version migration. General AI agents (Aider, Goose, Claude Code) can theoretically do it but have no version-specific migration knowledge.
+No tool guides them interactively, applies the code changes, and validates with their actual test suite. Renovate/Dependabot only bump version numbers. GPT-Migrate is for language migration, not version migration. General AI agents (Aider, Goose) can theoretically do it but have no version-specific migration knowledge.
 
 The position nobody occupies: **guided, version-aware, test-validated migration CLI that works for any stack.**
 
@@ -76,30 +76,42 @@ Rejected: Python dependency, unstable API, user must install aider separately.
 packages/
   cli/
     src/
-      cli.ts                ← entry point, commander
+      main.ts               ← entry point, commander parser + triggers parallel prefetch (config load, git status)
       commands/
         setup.ts            ← AI provider wizard (v0.1: Anthropic + OpenAI)
         migrate.ts          ← core interactive migration flow
         analyze.ts          ← scan manifests, show what's outdated
-      detect.ts             ← manifest scanner (package.json, pom.xml, go.mod, etc.)
-      guides.ts             ← JSON migration data loader + query
-      providers/
-        index.ts            ← provider interface: { chat(system, user): Promise<string> }
-        anthropic.ts        ← Anthropic API key auth
-        openai.ts           ← OpenAI API key (also covers Gemini via OpenAI-compatible endpoint)
+      tools/                ← AI Tool Registry (input schema, permission model, execution logic)
+        FileReadTool.ts     ← reads project files for context
+        FileEditTool.ts     ← safe string replacements or AST edits
+        BashTool.ts         ← executes test validation runner
+      services/             ← Core external integrations
+        api/                ← provider clients (Anthropic, OpenAI interface)
+        mcp/                ← Model Context Protocol server connections (v0.2)
+      hooks/
+        toolPermission.ts   ← Permission system: intercepts tool calls to enforce diff-first + confirm
       patch/
         react.ts            ← React codemods (ReactDOM.render → createRoot, etc.) — exports patchReact17to18
         springboot.ts       ← javax→jakarta, Security config rewrites — exports patchSpringBoot27to30
-        index.ts            ← auto-discovers patchers by convention: any .ts file in patch/ exporting
-                               a function named patch{Tech}{From}to{To} is registered automatically.
-                               Adding a patcher: create file, export function, restart tool — no code changes needed.
-      validate.ts           ← test runner
+        index.ts            ← auto-discovers patchers by convention
+      detect.ts             ← manifest scanner (package.json, pom.xml, go.mod, etc.)
+      guides.ts             ← JSON migration data loader + query
+      validate.ts           ← test runner orchestrator
       report.ts             ← MIGRATION.md generator
-      diff.ts               ← diff display + confirm prompt
-      config.ts             ← ~/.stack-migrator/config.json (plaintext, user-warned)
+      diff.ts               ← diff display logic
+      config.ts             ← ~/.stack-migrator/config.json handling
   migration-data/           ← JSON files moved from src/data/migration-guides/
   web/                      ← current React app (keep as docs/demo site)
 ```
+
+### Key Architectural Patterns Adopted
+
+Inspired by advanced agentic CLI architectures to maximize responsiveness, modularity, and security:
+
+1. **Tool System (`src/tools/`)**: Every action the AI takes (reading files, executing bash tests, patching) is implemented as a self-contained module defining an input schema, execution logic, and permission requirements.
+2. **Permission Hook (`src/hooks/toolPermission.ts`)**: Centralized permission verification. Before any state-mutating tool executes, it guarantees user consent (e.g., prompt diff confirm before `FileEditTool` writes).
+3. **Parallel Prefetch**: CLI startup kicks off parallel background tasks (MDM settings checks, fetching git status, reading `~/.stack-migrator/config.json`) before evaluating heavy runtime modules to reduce boot time latency.
+4. **Lazy Loading**: Heavy modules (LLM SDKs, language parsers, telemetry) are loaded via dynamic `import()` closures to ensure the `migrate analyze` or `--help` commands execute instantly.
 
 **Provider interface:**
 ```typescript
@@ -107,7 +119,7 @@ interface Provider {
   chat(system: string, user: string): Promise<string>;
   name: string;
 }
-// Each file in providers/ exports a class implementing this.
+// Each file in services/api/ exports a class implementing this.
 // Adding a provider: implement interface, add API key prompt to setup.ts.
 ```
 
@@ -296,6 +308,27 @@ jobs:
       - run: npm publish
         env: { NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} }
 ```
+
+## System Prompt Design 
+
+Our underlying AI agent prompts will incorporate sophisticated engineering patterns discovered in the source architecture to maximize reliability, safety, and efficiency in migrations:
+
+### 1. Output Efficiency & Communication
+- **Direct Answers**: We will instruct models to ignore filler words, preambles, and conversational transitions. Do not restate what the user said—just execute the migration task.
+- **Focus Areas**: Text output should solely focus on (1) Decisions needing user input, (2) High-level status updates at milestones, and (3) Errors or blockers that alter the migration plan.
+- **Conciseness**: The system will give short updates at key moments: when finding something load-bearing (a major breaking change constraint), changing direction, or making significant progress. If it can be said in one sentence, don't use three.
+
+### 2. Executing Actions With Care (Safety Boundaries)
+- **Blast Radius Awareness**: Explicitly ground the tool on reversibility. Reversible local actions (editing files, running tests, applying standard patches) are encouraged. Hard-to-reverse operations (force-pushing, removing configuration indiscriminately) require explicit user consensus.
+- **Problem Diagnosis**: The prompt will specifically ban using destructive actions as a shortcut for encountering obstacles. If test loops fail, the model must diagnose the root cause rather than bypassing test validations or discarding files.
+
+### 3. Using Provided Tools Systematically
+- **Strict Tool Boundaries**: Instruct the model to exclusively use dedicated structural tools (e.g. `FileReadTool`, `FileEditTool`) over falling back to messy `BashTool` equivalents (`cat`, `sed`, `awk`, `grep`).
+- **Parallel Execution**: Ask the agent to maximize efficiency by making independent tool implementations in parallel. Group up multiple, isolated file-edits into the same execution batch instead of iterating slowly.
+
+### 4. Code & Software Engineering Philosophy
+- **Minimal Complexity**: The prompt will enforce: *Don't add features, refactor code, or make improvements beyond the explicit migration task.* Do not write premature abstractions or rewrite functional segments just because they look dated.
+- **Intelligent Debugging**: When a generated migration patch causes tests to fail, models must systematically read the error output, verify assumptions, and propose a focused fix. Only escalate to the user when genuinely blocked.
 
 ## Next Steps
 
